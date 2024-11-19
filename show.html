@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <style>
+        body {
+            background-color: #f5f6f7;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4/lodash.min.js"></script>
+</head>
+
+<body>
+    <p id="message">Processing...</p>
+    <script>
+        /* Deze vullen vanuit ABAP */
+        const keyJson = '';
+        const xrefJson = '';
+        const token = '';
+
+        const message = document.getElementById('message');
+        let id = '';
+
+        (async () => {
+            if (keyJson) {
+                const key = JSON.parse(keyJson);
+                const response = await fetch('https://luukpohlmann.nl/apps/xref-api/xrefs');
+                const xrefs = await response.json();
+                const xref = _.find(xrefs, key);
+                if (!xref) {
+                    message.textContent = 'Not found';
+                    return;
+                }
+                id = xref.id;
+            }
+
+            if (xrefJson) {
+                const suffix = (id) ? ('/' + id) : '';
+                response = await fetch('https://luukpohlmann.nl/apps/xref-api/xrefs' + suffix, {
+                    method: (id) ? 'PUT' : 'POST',
+                    headers: {
+                        authorization: 'Bearer ' + token,
+                        'content-type': 'application/json',
+                        accept: 'application/json'
+                    },
+                    body: xrefJson
+                });
+                result = await response.json();
+                if (!response.ok) {
+                    message.textContent = result.message;
+                    return;
+                }
+                id = result.id;
+            }
+
+            location.href = 'https://luukpohlmann.nl/apps/xref/#/' + id;
+        })();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            display: grid;
+            justify-items: center;
+            align-items: center;
+        }
+
+        form {
+            display: grid;
+            justify-items: center;
+        }
+    </style>
+</head>
+
+<body>
+    <form
+        id="form"
+        action="sapevent:sync"
+        method=post
+    >
+        <p id="message">...</p>
+        <input
+            name="xrefs"
+            type="hidden"
+        />
+        <input
+            id="button"
+            type="submit"
+            value="Synchronize"
+            disabled="true"
+        >
+    </form>
+
+    <script>
+        const system = 'DEV@company.com';   // <= deze vullen vanuit ABAP
+        const message = document.getElementById('message');
+
+        (async () => {
+            const response = await fetch('https://luukpohlmann.nl/apps/xref-api/xrefs', {
+                headers: {
+                    accept: "application/json"
+                }
+            });
+            const result = await response.json();
+
+            if (!response.ok) {
+                message.textContent = result.message;
+                return;
+            }
+
+            let xrefs = result.filter(item => item.system == system);
+            message.textContent = xrefs.length + ' already analyzed';
+            if (xrefs.length) {
+                form.xrefs.value = window.btoa(JSON.stringify(xrefs));
+                form.button.disabled = false;
+            }
+        })();
+    </script>
+</body>
+
+</html>
